@@ -44,7 +44,7 @@ fn main() {
                 println!("{log_style}Bye!{log_style:#}");
                 break;
             }
-            let cmd_and_args: Vec<&str> = buf.split(' ').collect();
+            let cmd_and_args: Vec<&str> = buf.split(' ').map(str::trim).collect();
             let mut args = vec![CmdArg::Help; cmd_and_args.len() - 1];
             for i in 1..cmd_and_args.len() {
                 args[i - 1] = match cmd_and_args[i] {
@@ -65,7 +65,10 @@ fn main() {
                     }
                 },
                 _ => {
-                    println!("{error_style}Unknown cmd{error_style:#}");
+                    println!(
+                        "{error_style}Unknown cmd:{error_style:#} `{}`",
+                        cmd_and_args[0]
+                    );
                 }
             }
         } else {
