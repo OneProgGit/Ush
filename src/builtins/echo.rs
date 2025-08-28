@@ -13,11 +13,15 @@ pub struct Echo;
 impl Command for Echo {
     fn execute(args: &[CmdArg]) -> Result<String, CmdError> {
         if args.is_empty() {
-            return Err(CmdError::InvalidArgs);
+            return Err(CmdError::InvalidArg(CmdArg::None));
         }
-        if let CmdArg::Literal(x) = &args[0] {
-            return Ok(x.to_owned());
+
+        match &args[0] {
+            CmdArg::Literal(x) => Ok(x.to_owned()),
+            CmdArg::Help => {
+                Ok("Returns a literal itself.\nUsage: echo [literal]\nArgs:\nHelp: -h".into())
+            }
+            CmdArg::None => Err(CmdError::InvalidArg(args[0].clone())),
         }
-        Err(CmdError::InvalidArgs)
     }
 }

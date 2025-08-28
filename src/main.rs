@@ -8,7 +8,7 @@
 #![deny(missing_docs)]
 #![allow(clippy::multiple_crate_versions)]
 
-use std::env;
+use std::{collections::HashMap, env, str::FromStr};
 
 use anstyle::{AnsiColor, Style};
 
@@ -20,6 +20,8 @@ use crate::{
 pub mod builtins;
 pub mod command;
 
+type ExecuteFn = fn(&[CmdArg]) -> Result<String, CmdError>;
+
 fn main() {
     let error_style = Style::new().fg_color(Some(AnsiColor::Red.into())).bold();
     let log_style = Style::new().fg_color(Some(AnsiColor::Cyan.into())).bold();
@@ -27,6 +29,9 @@ fn main() {
     let arrow_style = Style::new()
         .fg_color(Some(AnsiColor::Magenta.into()))
         .bold();
+
+    let mut cmds: HashMap<&'static str, ExecuteFn> = HashMap::new();
+    cmds.insert("echo", Echo::execute);
 
     println!("{log_style}Welcome to Ush! To list all builtins, type `ush -h`{log_style:#}");
 
@@ -44,35 +49,37 @@ fn main() {
                 println!("{log_style}Bye!{log_style:#}");
                 break;
             }
+            if buf.trim().is_empty() {
+                continue;
+            }
             let cmd_and_args: Vec<&str> = buf.split(' ').map(str::trim).collect();
             let mut args = vec![CmdArg::Help; cmd_and_args.len() - 1];
             for i in 1..cmd_and_args.len() {
-                args[i - 1] = match cmd_and_args[i] {
-                    "-h" => CmdArg::Help,
-                    _ => CmdArg::Literal(cmd_and_args[i].to_owned()),
-                };
+                args[i - 1] = CmdArg::from_str(cmd_and_args[i])
+                    .unwrap_or_else(|_| CmdArg::Literal(cmd_and_args[i].into()));
             }
-            match cmd_and_args[0] {
-                "echo" => match Echo::execute(&args) {
+            if let Some(f) = cmds.get(&cmd_and_args[0]) {
+                match f(&args) {
                     Ok(res) => {
                         println!("{log_style}{res}{log_style:#}");
                     }
                     Err(e) => {
                         let err_text = match e {
-                            CmdError::InvalidArgs => "Invalid args",
+                            CmdError::InvalidArg(x) => format!("Invalid arg: `{}`", x.as_ref()),
                         };
                         println!("{error_style}{err_text}{error_style:#}");
                     }
-                },
-                _ => {
-                    println!(
-                        "{error_style}Unknown cmd:{error_style:#} `{}`",
-                        cmd_and_args[0]
-                    );
                 }
+            } else {
+                println!(
+                    "{error_style}Unknown cmd: `{}`{error_style:#}",
+                    cmd_and_args[0]
+                );
             }
         } else {
             println!("{error_style}Failed to read cmd{error_style:#}");
         }
+
+        buf.clear();
     }
 }
