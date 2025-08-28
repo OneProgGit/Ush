@@ -15,11 +15,10 @@ impl Command for Echo {
         if args.is_empty() {
             return Err(CmdError::InvalidArg(CmdArg::None));
         }
-
         match &args[0] {
             CmdArg::Literal(x) => Ok(x.to_owned()),
             CmdArg::Help => {
-                Ok("Returns a literal itself.\nUsage: echo [literal]\nArgs:\nHelp: -h".into())
+                Ok("Echo returns a literal itself.\nPossible args: [literal], -h".into())
             }
             CmdArg::None => Err(CmdError::InvalidArg(args[0].clone())),
         }
