@@ -6,3 +6,4 @@ edition = "2024"
 [dependencies]
 anstyle = "1.0.11"
 strum = { version = "0.27.2", features = ["derive"] }
+whoami = "1.6.1"

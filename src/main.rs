@@ -18,9 +18,9 @@ use anstyle::{AnsiColor, Style};
 
 use crate::{
     args_parser::parse_args,
-    builtins::{echo::Echo, ush::Ush},
+    builtins::{echo::echo, fetch::fetch, ush::ush, uvim::uvim, whoami::whoami},
     cmds_executor::execute_cmd,
-    command::{CmdArg, CmdError, Command},
+    command::{CmdArg, CmdError},
 };
 
 pub mod args_parser;
@@ -40,8 +40,11 @@ fn main() {
         .bold();
 
     let mut cmds: HashMap<&str, ExecuteFn> = HashMap::new();
-    cmds.insert("echo", Echo::execute);
-    cmds.insert("ush", Ush::execute);
+    cmds.insert("echo", echo);
+    cmds.insert("ush", ush);
+    cmds.insert("fetch", fetch);
+    cmds.insert("whoami", whoami);
+    cmds.insert("uvim", uvim);
 
     println!("{log_style}Welcome to Ush! To list all builtins, type `ush -h`{log_style:#}");
 

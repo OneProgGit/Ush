@@ -21,7 +21,18 @@ pub fn execute_cmd<S: std::hash::BuildHasher>(
             Ok(res) => Ok(res),
             Err(e) => {
                 let err_text = match e {
-                    CmdError::InvalidArg(x) => format!("Invalid arg: `{}`", x.as_ref()),
+                    CmdError::InvalidArg(x) => {
+                        format!(
+                            "Invalid arg: `{}`. Try `{cmd} -h` to list all avaible args",
+                            x.as_ref()
+                        )
+                    }
+                    CmdError::InvalidArgCount(x) => {
+                        format!(
+                            "Invalid arg count: `{x}`. Try `{cmd} -h` to list all avaible args.",
+                        )
+                    }
+                    CmdError::File => "Unknown error".into(),
                 };
                 Err(err_text)
             }
